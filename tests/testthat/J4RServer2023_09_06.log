@@ -1,0 +1,4 @@
+Sep 06, 2023 1:05:22 PM j4r.net.server.AbstractServer startReceiverThread
+INFOS: Server started
+Sep 06, 2023 1:05:25 PM j4r.app.AbstractGenericEngine shutdown
+INFOS: Shutting down application...

@@ -1,0 +1,24 @@
+Package: LinRegTrunc
+Type: Package
+Title: Fit Linear Models With Truncated Normally Distributed Errors
+Version: 1.0.0
+Authors@R: c(
+    person("Mathieu", "Fortin", email = "mathieu.fortin.re@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-6436-2727")),
+    person("His Majesty the King in right of Canada", role=c("cph")))
+Description: Fit linear models whose residual error distribution can be 
+    truncated due to natural constraints. This is likely to happen with
+    allometric relationships and growth modelling data, even though the
+    response variable is transformed. 
+Depends: R (>= 4.3.0)
+Imports: 
+    J4R (>= 1.2.1)
+Remotes:
+    CWFC-CCFB/J4R
+License: LGPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.3
+SystemRequirements: Java 8
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 2
