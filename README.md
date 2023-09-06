@@ -38,7 +38,6 @@ A data.frame object is available within the package:
 
 ~~~R
 require(LinRegTrunc)
-
 data("datasetSingleObs")
 ~~~
 
@@ -62,9 +61,7 @@ A reasonable linear model with error terms following a truncated normal distribu
 
 ~~~R 
 fit <- LinRegTrunc("yTrans ~ lnDt_corr + dbhCm + BAL", datasetSingleObs, 0) # truncation below 0
-
 summary(fit)
-
 plot(fit)
 
 shutdownClient()
