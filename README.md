@@ -18,6 +18,10 @@ The source code of the SIMEXGLM package is freely available at https://github.co
 
 The LinRegTrunc package is licensed under the GNU Lesser General Public License v3 (LGPL-3.0).
 
+The backend of this R package is composed of two open-source Java libraries:
+* repicea (LGPL-3.0) available at https://github.com/CWFC-CCFB/repicea .
+* repicea-mathstats (LGPL-3.0) available at https://github.com/CWFC-CCFB/repicea-mathstats .
+
 Tickets can be created at https://github.com/CWFC-CCFB/LinRegTrunc/issues .
 
 Mathieu Fortin
