@@ -71,5 +71,5 @@ plot(fit)
 shutdownClient()
 ~~~
 
-The call to the <code>shutdownClient</code> function shuts down the client and the Java server as well avoiding having an idle process. 
+The call to the <code>shutdownClient</code> function shuts down the client and the Java server to avoid leaving an idle process in memory. 
 
