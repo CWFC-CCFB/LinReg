@@ -29,7 +29,9 @@ e-mail: mathieu.fortin.re@gmail.com
 
 ## How to install the package
 
-The LinRegTrunc package can be installed directly from GitHub using the remotes package:
+The LinRegTrunc package depends on [J4R](https://github.com/CWFC-CCFB/J4R/wiki), which requires Java 8. Please see the instruction at https://github.com/CWFC-CCFB/J4R/wiki#requirements . 
+
+Once Java 8 has been installated, the LinRegTrunc package can be installed directly from GitHub using the remotes package:
 
 ~~~R
 library(remotes)
