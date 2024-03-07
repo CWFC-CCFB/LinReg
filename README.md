@@ -18,6 +18,10 @@ The source code of the SIMEXGLM package is freely available at https://github.co
 
 The LinRegTrunc package is licensed under the GNU Lesser General Public License v3 (LGPL-3.0).
 
+The backend of this R package is composed of two open-source Java libraries:
+* repicea (LGPL-3.0) available at https://github.com/CWFC-CCFB/repicea .
+* repicea-mathstats (LGPL-3.0) available at https://github.com/CWFC-CCFB/repicea-mathstats .
+
 Tickets can be created at https://github.com/CWFC-CCFB/LinRegTrunc/issues .
 
 Mathieu Fortin
@@ -25,7 +29,9 @@ e-mail: mathieu.fortin.re@gmail.com
 
 ## How to install the package
 
-The LinRegTrunc package can be installed directly from GitHub using the remotes package:
+The LinRegTrunc package depends on [J4R](https://github.com/CWFC-CCFB/J4R/wiki), which requires Java 8. Please see the instruction at https://github.com/CWFC-CCFB/J4R/wiki#requirements . 
+
+Once Java 8 has been installated, the LinRegTrunc package can be installed directly from GitHub using the remotes package:
 
 ~~~R
 library(remotes)
@@ -67,5 +73,5 @@ plot(fit)
 shutdownClient()
 ~~~
 
-The call to the <code>shutdownClient</code> function shuts down the client and the Java server as well avoiding having an idle process. 
+The call to the <code>shutdownClient</code> function shuts down the client and the Java server to avoid leaving an idle process in memory. 
 
