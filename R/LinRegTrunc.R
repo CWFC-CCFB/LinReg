@@ -120,21 +120,22 @@ createDataSet <- function(formula, data) {
 
 
 #'
-#' Correct Inference for Generalized Linear Models with Measurement Errors
-#' using the SIMEX Method
+#' Fit a Linear Model with Truncated Gaussian Error Term
 #'
-#' First, it create a data structure on the Java end that will be later used with
-#' the SIMEX method. Secondly, it fits a naive model. Thirdly, it implements the
-#' SIMEX method.
+#' The function first fits a regular linear model. The parameter
+#' estimates are then used as starting values for the regression
+#' with truncated Gaussian error term.
 #'
 #' @param formula a formula (e.g. "y ~ x")
 #' @param data a data.frame object
-#' @param truncation a numeric that sets the lower bound of the truncated distribution
+#' @param truncation a numeric that sets the lower bound of the truncated distribution.
+#' If the variable has been log transformed, the lower bound must represent the value
+#' on the transformed scale.
 #' @param isLogTransformed a logical, it is assumed the response variable has been
 #' log transformed
 #' @param constant a constant that has been added to the response variable before
 #' the log transformation. It is assumed that this constant is 1.
-#' @return an instance of the S3 SIMEXResult class
+#' @return an instance of the S3 LinRegTrunc class
 #'
 #' @export
 LinRegTrunc <- function(formula,

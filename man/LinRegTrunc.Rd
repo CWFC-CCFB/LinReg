@@ -2,8 +2,7 @@
 % Please edit documentation in R/LinRegTrunc.R
 \name{LinRegTrunc}
 \alias{LinRegTrunc}
-\title{Correct Inference for Generalized Linear Models with Measurement Errors
-using the SIMEX Method}
+\title{Fit a Linear Model with Truncated Gaussian Error Term}
 \usage{
 LinRegTrunc(formula, data, truncation, isLogTransformed = T, constant = 1)
 }
@@ -12,7 +11,9 @@ LinRegTrunc(formula, data, truncation, isLogTransformed = T, constant = 1)
 
 \item{data}{a data.frame object}
 
-\item{truncation}{a numeric that sets the lower bound of the truncated distribution}
+\item{truncation}{a numeric that sets the lower bound of the truncated distribution.
+If the variable has been log transformed, the lower bound must represent the value
+on the transformed scale.}
 
 \item{isLogTransformed}{a logical, it is assumed the response variable has been
 log transformed}
@@ -21,10 +22,10 @@ log transformed}
 the log transformation. It is assumed that this constant is 1.}
 }
 \value{
-an instance of the S3 SIMEXResult class
+an instance of the S3 LinRegTrunc class
 }
 \description{
-First, it create a data structure on the Java end that will be later used with
-the SIMEX method. Secondly, it fits a naive model. Thirdly, it implements the
-SIMEX method.
+The function first fits a regular linear model. The parameter
+estimates are then used as starting values for the regression
+with truncated Gaussian error term.
 }
