@@ -7,12 +7,6 @@ require(LinRegTrunc)
 
 data("datasetSingleObs")
 
-jDs <- createDataSet("yTrans ~ lnDt_corr + dbhCm + BAL", datasetSingleObs)
-
-test_that("Checking if a DataSet instance can be instantiated on Java end", {
-  expect_true(jDs$getClass()$getName() == "repicea.stats.data.DataSet")
-})
-
 fit <- LinRegTrunc("yTrans ~ lnDt_corr + dbhCm + BAL", datasetSingleObs, 0)
 summary(fit)
 

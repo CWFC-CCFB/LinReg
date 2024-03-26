@@ -76,17 +76,7 @@ shutdownClient <- function() {
   }
 }
 
-#'
-#' Create a Data Structure
-#'
-#' Create a data structure on the Java end that will be later used with
-#' the GLM or SIMEX methods.
-#'
-#' @param formula a formula (e.g. "y ~ x")
-#' @param data a data.frame object
-#'
-#' @export
-createDataSet <- function(formula, data) {
+.createDataSet <- function(formula, data) {
   .loadLibrary()
   formattedString <- J4R::callJavaMethod(formula, "replace", "\n", "")
   formattedString <- J4R::callJavaMethod(formattedString, "replace", " ", "")
@@ -113,7 +103,7 @@ createDataSet <- function(formula, data) {
   if ("java.object" %in% class(data) && data$.class == "repicea.stats.data.DataSet") {
     dataSet <- data
   } else {
-    dataSet <- createDataSet(formula, data)
+    dataSet <- .createDataSet(formula, data)
   }
   return(dataSet)
 }
