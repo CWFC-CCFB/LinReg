@@ -106,7 +106,8 @@ new_LinRegTrunc <- function(MMLFit,
   me$resid <- .convertJavaMatrixToR(MMLFit$getResiduals())
   me$truncation <- truncation
   if (isLogTransformed) {
-    me$predictedOriginalScale <- .convertJavaMatrixToR(MMLFit$getPredictedOriginalScale()) - constant
+    me$predictedOriginalScale <- .convertJavaMatrixToR(
+      MMLFit$getPredictedOriginalScale(J4R::createJavaObject("repicea.math.Matrix", isNullObject = T))) - constant
   } else {
     me$predictedOriginalScale <- me$predicted
   }
