@@ -5,7 +5,7 @@
 ########################################################
 
 
-jarFilenames <- c("repicea-1.9.8.jar", "repicea-mathstats-1.2.3.jar")
+jarFilenames <- c("repicea-1.10.2.jar", "repicea-mathstats-1.3.9.jar")
 
 .welcomeMessage <- function() {
   packageStartupMessage("Welcome to LinRegTrunc!")
@@ -78,12 +78,15 @@ shutdownClient <- function() {
 
 .createDataSet <- function(formula, data) {
   .loadLibrary()
-  formattedString <- J4R::callJavaMethod(formula, "replace", "\n", "")
-  formattedString <- J4R::callJavaMethod(formattedString, "replace", " ", "")
-  firstSplit <- J4R::getAllValuesFromListObject(J4R::callJavaMethod("repicea.util.ObjectUtility", "decomposeUsingToken", formattedString, "~"))
-  secondSplit <- J4R::getAllValuesFromListObject(J4R::callJavaMethod("repicea.util.ObjectUtility", "decomposeUsingToken", firstSplit[2], "+"))
-  uncorrectedFieldNames <- c(firstSplit[1], secondSplit)
-  fieldNames <- unique(unlist(strsplit(uncorrectedFieldNames, ":")))
+
+  formattedString <- gsub("\n", "", formula)
+  formattedString <- gsub(" ", "", formattedString)
+  firstSplit <- strsplit(formattedString, "~")[[1]]
+  secondSplit <- strsplit(firstSplit[2], "\\+")[[1]]
+  thirdSplit <- unlist(strsplit(secondSplit, "\\*"))
+  fourthSplit <- unlist(strsplit(thirdSplit, "\\:"))
+  uncorrectedFieldNames <- c(firstSplit[1], fourthSplit)
+  fieldNames <- unique(uncorrectedFieldNames)
 
   data.tmp <- data
 
