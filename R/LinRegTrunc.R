@@ -1,11 +1,11 @@
 ########################################################
 # Basic R function for the package.
 # Author: Mathieu Fortin, Canadian Wood Fibre Centre
-# Date: April 2019
+# Date: April 2024
 ########################################################
 
 
-jarFilenames <- c("repicea-1.10.2.jar", "repicea-mathstats-1.3.9.jar")
+jarFilenames <- c("repicea-1.10.4.jar", "repicea-mathstats-1.4.4.jar")
 
 .welcomeMessage <- function() {
   packageStartupMessage("Welcome to LinRegTrunc!")
@@ -165,34 +165,6 @@ LinRegTrunc <- function(formula,
   output <- new_LinRegTrunc(linRegTrunc, formula, truncation, isLogTransformed, constant)
   return(output)
 }
-
-
-
-
-# .addToArray <- function(refArray, array) {
-#   if (length(refArray) != length(array)) {
-#     stop("Incompatible array length!")
-#   } else {
-#     for (i in 1:length(array)) {
-#       refArray[[i]] <- c(refArray[[i]], array[[i]])
-#     }
-#   }
-#   return(refArray)
-# }
-
-# .convertJavaDataSetIntoDataFrame <- function(dataSetObject) {
-#   dataFrameObj <- NULL
-#   fieldNames <- J4R::getAllValuesFromListObject(dataSetObject$getFieldNames())
-#   for (i in 0:(length(fieldNames) - 1)) {
-#     if (is.null(dataFrameObj)) {
-#       dataFrameObj <- data.frame(J4R::getAllValuesFromListObject(dataSetObject$getFieldValues(i)))
-#     } else {
-#       dataFrameObj <- cbind(dataFrameObj, J4R::getAllValuesFromListObject(dataSetObject$getFieldValues(i)))
-#     }
-#   }
-#   colnames(dataFrameObj) <- fieldNames
-#   return(dataFrameObj)
-# }
 
 
 

@@ -61,9 +61,30 @@ vcov.linregtrunc <- function(object) {
 #'
 #' @export
 fittedOriginalScale <- function(object) {
-  return(object$predictedOriginalScale)
+  if (methods::is(object, "linregtrunc")) {
+    return(object$predictedOriginalScale)
+  } else {
+    stop("This function only accepts S3 instance of the linregtrunc class!")
+  }
 }
 
+#'
+#' Provide the Model Prediction variances on the Original Scale
+#'
+#' If a log transformation was used, the model predictions are
+#' back transformed to the original scale.
+#'
+#' @param object an instance of the S3 class linregtrunc
+#' @return a vector
+#'
+#' @export
+varianceOriginalScale <- function(object) {
+  if (methods::is(object, "linregtrunc")) {
+    return(object$varianceOriginalScale)
+  } else {
+    stop("This function only accepts S3 instance of the linregtrunc class!")
+  }
+}
 
 #'
 #' Produce a Graph of Residuals Against Predicted Values
@@ -106,12 +127,13 @@ new_LinRegTrunc <- function(MMLFit,
   me$resid <- .convertJavaMatrixToR(MMLFit$getResiduals())
   me$truncation <- truncation
   if (isLogTransformed) {
-    me$predictedOriginalScale <- .convertJavaMatrixToR(
-      MMLFit$getPredictedOriginalScale(J4R::createJavaObject("repicea.math.Matrix", isNullObject = T))) - constant
+    predAndVariance <- .convertJavaMatrixToR(MMLFit$getPredOnLogBackTransformedScale(constant, TRUE))
+    me$predictedOriginalScale <- predAndVariance[,1]
+    me$varianceOriginalScale <- predAndVariance[,2]
   } else {
     me$predictedOriginalScale <- me$predicted
+    me$varianceOriginalScale <- MMLFit$getResidualVariance()
   }
-
   return(me)
 }
 
