@@ -1,41 +1,43 @@
-The LinRegTrunc package
+The LinReg package
 =======================
+
+**IMPORTANT**: This package was formerly called LinRegTrunc. 
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/CWFC-CCFB/LinRegTrunc/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/CWFC-CCFB/LinRegTrunc/actions/workflows/R-CMD-check.yaml)
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL_v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
 <!-- badges: end -->
 
-An R package for linear regression with residual errors following a truncated normal distribution.
+An R package for linear regression with residual errors following a normal distribution or a truncated normal distribution.
 
 ## Introduction
 
-It may happen that the response variable is subject to natural constraints. For instance, in forestry, allometric relationships and tree growth observations cannot be negative by definition. 
-This results in a truncated distribution for the residual errors. The LinRegTrunc package implements a maximum likelihood estimator accounting for an eventual truncation of the distribution of
-the residual error terms. 
+This package implements a linear model with or without log-transformed responses. It may happen that the response variable is subject to natural constraints. For instance,
+in forestry, allometric relationships and tree growth observations cannot be negative by definition. This results in a truncated distribution for the residual errors. 
+The LinReg package implements a maximum likelihood estimator accounting for an eventual truncation of the distribution of the residual error terms. 
 
-The source code of the SIMEXGLM package is freely available at https://github.com/CWFC-CCFB/LinRegTrunc .
+The source code of the LinReg package is freely available at https://github.com/CWFC-CCFB/LinReg .
 
-The LinRegTrunc package is licensed under the GNU Lesser General Public License v3 (LGPL-3.0).
+The LinReg package is licensed under the GNU Lesser General Public License v3 (LGPL-3.0).
 
 The backend of this R package is composed of two open-source Java libraries:
 * repicea (LGPL-3.0) available at https://github.com/CWFC-CCFB/repicea .
 * repicea-mathstats (LGPL-3.0) available at https://github.com/CWFC-CCFB/repicea-mathstats .
 
-Tickets can be created at https://github.com/CWFC-CCFB/LinRegTrunc/issues .
+Tickets can be created at https://github.com/CWFC-CCFB/LinReg/issues.
 
 Mathieu Fortin
 e-mail: mathieu.fortin.re@gmail.com
 
 ## How to install the package
 
-The LinRegTrunc package depends on [J4R](https://github.com/CWFC-CCFB/J4R/wiki), which requires Java 8. Please see the instruction at https://github.com/CWFC-CCFB/J4R/wiki#requirements . 
+The LinReg package depends on [J4R](https://github.com/CWFC-CCFB/J4R/wiki), which requires Java 8. Please see the instruction at https://github.com/CWFC-CCFB/J4R/wiki#requirements . 
 
-Once Java 8 has been installated, the LinRegTrunc package can be installed directly from GitHub using the remotes package:
+Once Java 8 has been installated, the LinReg package can be installed directly from GitHub using the remotes package:
 
 ~~~R
 library(remotes)
-install_github("CWFC-CCFB/LinRegTrunc") ### install LinRegTrunc directly from GitHub
+install_github("CWFC-CCFB/LinReg") ### install LinReg directly from GitHub - the J4R package should be automatically installed as well
 ~~~
 
 ## Example of code
@@ -43,7 +45,7 @@ install_github("CWFC-CCFB/LinRegTrunc") ### install LinRegTrunc directly from Gi
 A data.frame object is available within the package: 
 
 ~~~R
-require(LinRegTrunc)
+require(LinReg)
 data("datasetSingleObs")
 ~~~
 
@@ -66,12 +68,26 @@ The subset available in the 'datasetSingleObs' data.frame object contains the fo
 A reasonable linear model with error terms following a truncated normal distribution can be fitted as follows: 
 
 ~~~R 
-fit <- LinRegTrunc("yTrans ~ lnDt_corr + dbhCm + BAL", datasetSingleObs, 0) # truncation below 0
+fit <- LinRegTrunc("yTrans ~ lnDt_corr + dbhCm + BAL", datasetSingleObs, 0, isLogTransformed = T, constant = 1) # truncation below 0
 summary(fit)
 plot(fit)
+~~~
 
+The fitted function has been modified to provide predictions on the original scale. For instance,
+
+~~~R
+fitted(fit, type = "original")
+~~~
+
+provides a two-column matrix with the predictions and their estimated variances on the original scale. In this particular case, the constant one
+has been automatically subtracted from the predictions, since the transformation was ln(y+1). If this constant is different from one, the constant argument
+in the LinRegTrunc function should be set accordingly.
+
+Finally, the call to the <code>shutdownClient</code> function shuts down the client and the Java server to avoid leaving an idle process in memory: 
+~~~R
 shutdownClient()
 ~~~
 
-The call to the <code>shutdownClient</code> function shuts down the client and the Java server to avoid leaving an idle process in memory. 
+
+
 
