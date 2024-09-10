@@ -1,7 +1,7 @@
-Package: LinRegTrunc
+Package: LinReg
 Type: Package
-Title: Fit Linear Models With Truncated Normally Distributed Errors
-Version: 1.0.4
+Title: Fit Linear Models With Normally Distributed Errors
+Version: 1.1.0
 Authors@R: c(
     person("Mathieu", "Fortin", email = "mathieu.fortin.re@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-6436-2727")),
     person("His Majesty the King in right of Canada", role=c("cph")))

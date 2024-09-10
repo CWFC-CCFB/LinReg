@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/reference/test_package.html#special-files
 
 library(testthat)
-library(LinRegTrunc)
+library(LinReg)
 
-test_check("LinRegTrunc")
+test_check("LinReg")

@@ -2,141 +2,72 @@
 # Class for LinRegTrunc
 #
 
-#'
-#' Provide a Summary of the fit
-#'
-#' @param object an instance of the S3 class linregtrunc
-#' @param ... absolutely useless, just to keep the signature consistent for inheritance
-#'
-#' @export
-summary.linregtrunc <- function(object, ...) {
-  cat(object$summary)
-}
 
-
-#'
-#' Provide the Coefficient (Parameter Estimates) of the Model
-#'
-#' @param object an instance of the S3 class linregtrunc
-#' @return a named vector
-#'
-#' @export
-coef.linregtrunc <- function(object) {
-  return(object$coef)
-}
-
-
-#'
-#' Provide the Model Predictions
-#'
-#' @param object an instance of the S3 class linregtrunc
-#' @return a vector
-#'
-#' @export
-fitted.linregtrunc <- function(object) {
-  return(object$fitted)
-}
-
-#'
-#' Provide the Estimated Variance-Covaraince of the Model Coefficients
-#'
-#' @param object an instance of the S3 class linregtrunc
-#'
-#' @return a matrix
-#'
-#' @export
-vcov.linregtrunc <- function(object) {
-  return(object$vcov)
-}
-
-
-#'
-#' Provide the Model Predictions on the Original Scale
-#'
-#' If a log transformation was used, the model predictions are
-#' back transformed to the original scale.
-#'
-#' @param object an instance of the S3 class linregtrunc
-#' @return a vector
-#'
-#' @export
-fittedOriginalScale <- function(object) {
-  if (methods::is(object, "linregtrunc")) {
-    return(object$predictedOriginalScale)
-  } else {
-    stop("This function only accepts S3 instance of the linregtrunc class!")
-  }
-}
-
-#'
-#' Provide the Model Prediction variances on the Original Scale
-#'
-#' If a log transformation was used, the model predictions are
-#' back transformed to the original scale.
-#'
-#' @param object an instance of the S3 class linregtrunc
-#' @return a vector
-#'
-#' @export
-varianceOriginalScale <- function(object) {
-  if (methods::is(object, "linregtrunc")) {
-    return(object$varianceOriginalScale)
-  } else {
-    stop("This function only accepts S3 instance of the linregtrunc class!")
-  }
-}
-
-#'
-#' Produce a Graph of Residuals Against Predicted Values
-#'
-#' If a log transformation was used, the model predictions are
-#' back transformed to the original scale.
-#'
-#' @param x an instance of the S3 class linregtrunc
-#' @param ... completely useless. Just for inheritance
-#' @return a graph
-#'
-#' @export
-plot.linregtrunc <- function(x, ...) {
-  base::plot(x = x$fitted,
-             y = x$resid,
-             ylab = "Residuals",
-             xlab = "Predicted values")
-  graphics::abline(0,0)
-}
 
 new_LinRegTrunc <- function(MMLFit,
                             formula,
                             truncation,
                             isLogTransformed,
                             constant) {
-  me <- new.env(parent = emptyenv())
-  class(me) <- c("linregtrunc")
-
-  me$formula <- formula
-
-  me$summary <- MMLFit$getSummary()
-  me$coef <- .convertJavaMatrixToR(MMLFit$getParameters())
-  me$vcov <- .convertJavaMatrixToR(MMLFit$getEstimator()$getParameterEstimates()$getVariance())
-  me$isLogTransformed <- isLogTransformed
-  me$constant <- constant
-
-  predicted <- MMLFit$getPredicted()
-  range <- 0:(predicted$m_iRows-1)
-  me$fitted <- predicted$getValueAt(range, as.integer(0))
-  me$resid <- .convertJavaMatrixToR(MMLFit$getResiduals())
+  me <- new_LinReg(MMLFit, formula, isLogTransformed, constant)
+  class(me) <- c("LinRegTrunc", "LinReg")
   me$truncation <- truncation
-  if (isLogTransformed) {
-    predAndVariance <- .convertJavaMatrixToR(MMLFit$getPredOnLogBackTransformedScale(constant, TRUE))
-    me$predictedOriginalScale <- predAndVariance[,1]
-    me$varianceOriginalScale <- predAndVariance[,2]
-  } else {
-    me$predictedOriginalScale <- me$predicted
-    me$varianceOriginalScale <- MMLFit$getResidualVariance()
-  }
   return(me)
 }
 
+#'
+#' Fit a Linear Model with Truncated Gaussian Error Term
+#'
+#' The function first fits a regular linear model. The parameter
+#' estimates are then used as starting values for the regression
+#' with truncated Gaussian error term.
+#'
+#' @param formula a formula (e.g. "y ~ x")
+#' @param data a data.frame object
+#' @param truncation a numeric that sets the lower bound of the truncated distribution.
+#' If the variable has been log transformed, the lower bound must represent the value
+#' on the transformed scale.
+#' @param isLogTransformed a logical, it is assumed the response variable has been
+#' log transformed
+#' @param constant a constant that has been added to the response variable before
+#' the log transformation. It is assumed that this constant is 1.
+#' @return an instance of the S3 LinRegTrunc class
+#'
+#' @export
+LinRegTrunc <- function(formula,
+                        data,
+                        truncation,
+                        isLogTransformed = T,
+                        constant = 1) {
+  .loadLibrary()
+  message("LinRegTrunc: Converting data.frame instance to Java object...")
+  jDataSet <- .convertDataIfNeeded(formula, data)
+  message("LinRegTrunc: Fitting preliminary OLS model (without consideration for truncation)...")
+  linMod <- J4R::createJavaObject("repicea.stats.model.lm.LinearModel", jDataSet, formula)
+  linMod$doEstimation()
+  if (!linMod$getEstimator()$isConvergenceAchieved()) {
+    stop("Convergence could not be achieved!")
+  }
+  coef <- linMod$getParameters()
+  sigma2 <- linMod$getResidualVariance()
+  newCoef <- J4R::createJavaObject("repicea.math.Matrix", as.integer(coef$m_iRows + 1), as.integer(1))
+  newCoef$setSubMatrix(coef, as.integer(0), as.integer(0))
+  newCoef$setValueAt(as.integer(newCoef$m_iRows - 1), as.integer(0), sigma2)
+
+  message("LinRegTrunc: Fitting model with truncated error distribution...")
+  linRegTrunc <- J4R::createJavaObject("repicea.stats.model.lm.LinearModelWithTruncatedGaussianErrorTerm",
+                                       jDataSet,
+                                       formula,
+                                       newCoef,
+                                       truncation)
+  linRegTrunc$doEstimation()
+  if (!linRegTrunc$getEstimator()$isConvergenceAchieved()) {
+    stop("Convergence could not be achieved!")
+  }
+
+  output <- new_LinRegTrunc(linRegTrunc, formula, truncation, isLogTransformed, constant)
+  return(output)
+}
 
 
 
