@@ -5,14 +5,14 @@
 ########################################################
 
 
-jarFilenames <- c("repicea-1.10.4.jar", "repicea-mathstats-1.5.0.jar")
+jarFilenames <- c("repicea-1.10.4.jar", "repicea-mathstats-1.5.1.jar")
 
 .welcomeMessage <- function() {
   packageStartupMessage("Welcome to LinReg!")
   packageStartupMessage("The LinReg package implements the linear regression with residual error terms")
   packageStartupMessage("following either a normal distribution or a truncated normal distribution.")
   packageStartupMessage("Please, make sure that Java (version 8 or later) is installed on your computer.")
-  packageStartupMessage("For more information, visit https://github.com/CWFC-CCFB/LinRegTrunc .")
+  packageStartupMessage("For more information, visit https://github.com/CWFC-CCFB/LinReg .")
 }
 
 

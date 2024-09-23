@@ -10,7 +10,7 @@
 #'
 #' @export
 summary.LinReg <- function(object, ...) {
-  cat(object$summary)
+  cat(object$JavaModel$getSummary())
 }
 
 
@@ -22,7 +22,7 @@ summary.LinReg <- function(object, ...) {
 #'
 #' @export
 coef.LinReg <- function(object) {
-  return(object$coef)
+  return(.convertJavaMatrixToR(object$JavaModel$getParameters()))
 }
 
 
@@ -35,7 +35,7 @@ coef.LinReg <- function(object) {
 #'
 #' @export
 vcov.LinReg <- function(object) {
-  return(object$vcov)
+  return(.convertJavaMatrixToR(object$JavaModel$getEstimator()$getParameterEstimates()$getVariance()))
 }
 
 
@@ -51,8 +51,10 @@ vcov.LinReg <- function(object) {
 #'
 #' @export
 plot.LinReg <- function(x, ...) {
-  base::plot(x = x$fitted,
-             y = x$resid,
+  fitted <- fitted.LinReg(x)
+  resid <- residuals.LinReg(x)
+  base::plot(x = fitted,
+             y = resid,
              ylab = "Residuals",
              xlab = "Predicted values")
   graphics::abline(0,0)
@@ -62,49 +64,85 @@ plot.LinReg <- function(x, ...) {
 #' Provide the Model Predictions
 #'
 #' @param object an instance of the S3 class LinReg
-#' @param type either transformed or original (if there was a log transformation)
-#' @param includeVariance a logical
-#' @return a vector (or a matrix if the variance is included)
+#' @return a vector of fitted value
 #'
 #' @export
-fitted.LinReg <- function(object, type="transformed", includeVariance=T) {
-  if (type == "transformed") {
-    return(object$fitted)
-  } else if (type == "original") {
-    if (includeVariance) {
-      out <- cbind(object$predictedOriginalScale, object$varianceOriginalScale)
-      colnames(out) <- c("pred", "varPred")
-      return(out)
-    } else {
-      return(object$predictedOriginalScale)
-    }
-  }
+fitted.LinReg <- function(object) {
+  return(.convertJavaMatrixToR(object$JavaModel$getPredicted()))
 }
+
+#'
+#' Provide the Model Residuals
+#'
+#' @param object an instance of the S3 class LinReg
+#' @return a vector of residuals
+#'
+#' @export
+residuals.LinReg <- function(object) {
+  jResiduals <- object$JavaModel$getResiduals()
+  resVect <- .convertJavaMatrixToR(jResiduals)
+  return(resVect)
+}
+
 
 #'
 #' Provide Predictions on the Original Scale.
 #'
-#' The method assumes that the responses are log transformed.
+#' If the response variable has not been log transformed, this function
+#' is equivalent to fitted.LinReg.
+#'
 #' @param object a LinReg S3 instance
-#' @param newdata a data.frame object with all the fields required by the model plus the y field set to NA
-#' @param estimator a character string among these ones: Baskerville, BeauchampAndOlson, MonteCarlo, or ComplexMonteCarlo
+#' @param type either response or original. Original means the predictions are back transformed.
+#' @param newdata a data.frame object with all the independent variables required by the model.
+#' If null, then the original data are taken.
+#' @param estimator a character string among these ones: Naive, BeauchampAndOlson, MonteCarlo, or ComplexMonteCarlo
+#' @param addResidualVariance a logical (TRUE: add the residual variance, is set to FALSE by default)
 #'
 #' @export
-predict.LinReg <- function(object, newdata, estimator) {
-  if (methods::is(object, "LinRegTrunc")) {
-    stop("This method has not been implemented for the LinRegTrunc class yet!")
-  }
-  if (object$isLogTransformed) {
+predict.LinReg <- function(object, newdata = NULL, type = "response", estimator = "Naive", addResidualVariance = F) {
+  if (type == "response" | !object$isLogTransformed) {
+    xMat <- .getXMatrixFromNewdata(object, newdata)
+    pred <- object$JavaModel$getPredicted(xMat)
+    nrowPred <- pred$m_iRows
+    pred <- .convertJavaMatrixToR(pred)
+    if (addResidualVariance) {
+      s2 <- object$JavaModel$getResidualVariance()
+      pred.tmp <- matrix(nrow = nrow(pred), ncol = 2)
+      pred.tmp[,1] <- pred
+      pred.tmp[,2] <- s2
+      pred <- pred.tmp
+    }
+    return(pred)
+  } else if (type == "original") {
+    xMat <- .getXMatrixFromNewdata(object, newdata)
     jEstimator <- J4R::createJavaObject("repicea.stats.model.lm.LogBackTransformation$Estimator", estimator)
+    pred <- J4R::callJavaMethod("repicea.stats.model.lm.LogBackTransformation", "getMeanPredictedValuesOnOriginalScale", object$JavaModel, xMat, object$constant, jEstimator)
+    nrowPred <- pred$m_iRows
+    pred <- .convertJavaMatrixToR(pred)
+    if (addResidualVariance) {
+      s2 <- J4R::callJavaMethod("repicea.stats.model.lm.LogBackTransformation", "getResidualVariancesOnOriginalScale", object$JavaModel, xMat, jEstimator)
+      s2 <- .convertJavaMatrixToR(s2)
+      pred.tmp <- matrix(nrow = nrowPred, ncol = 2)
+      pred.tmp[,1] <- pred
+      pred.tmp[,2] <- s2
+      pred <- pred.tmp
+    }
+    return(pred)
+  }
+}
+
+.getXMatrixFromNewdata <- function(object, newdata) {
+  if (is.null(newdata)) {
+    return(J4R::createJavaObject("repicea.math.Matrix", as.integer(1), as.integer(1), isNullObject = T))
+  } else {
+    yVar <- trimws(strsplit(as.character(object$formula), "~")[[1]][1])
+    if (!yVar %in% colnames(newdata)) {
+      newdata[,yVar] <- NA
+    }
     jDataSet <- .convertDataIfNeeded(object$formula, newdata)
     jDataStructure <- J4R::createJavaObject("repicea.stats.data.GenericStatisticalDataStructure", jDataSet)
     jDataStructure$setModelDefinition(object$formula)
-    xMat <- jDataStructure$constructMatrixX()
-    pred <- J4R::callJavaMethod("repicea.stats.model.lm.LogBackTransformation", "getMeanPredictedValuesOnOriginalScale", object$JavaModel, xMat, object$constant, jEstimator)
-    pred <- .convertJavaMatrixToR(pred)
-    return(pred)
-  } else {
-    stop("The model is apparently not based on log-transformed responses.")
+    return(jDataStructure$constructMatrixX())
   }
 }
 
@@ -117,24 +155,24 @@ new_LinReg <- function(MMLFit,
   me$JavaModel <- MMLFit
   me$formula <- formula
 
-  me$summary <- MMLFit$getSummary()
-  me$coef <- .convertJavaMatrixToR(MMLFit$getParameters())
-  me$vcov <- .convertJavaMatrixToR(MMLFit$getEstimator()$getParameterEstimates()$getVariance())
+#  me$summary <- MMLFit$getSummary()
+#  me$coef <- .convertJavaMatrixToR(MMLFit$getParameters())
+#  me$vcov <- .convertJavaMatrixToR(MMLFit$getEstimator()$getParameterEstimates()$getVariance())
   me$isLogTransformed <- isLogTransformed
   me$constant <- constant
 
-  predicted <- MMLFit$getPredicted()
-  range <- 0:(predicted$m_iRows-1)
-  me$fitted <- predicted$getValueAt(range, as.integer(0))
-  me$resid <- .convertJavaMatrixToR(MMLFit$getResiduals())
-  if (isLogTransformed) {
-    predAndVariance <- .convertJavaMatrixToR(MMLFit$getPredOnLogBackTransformedScale(constant, TRUE))
-    me$predictedOriginalScale <- predAndVariance[,1]
-    me$varianceOriginalScale <- predAndVariance[,2]
-  } else {
-    me$predictedOriginalScale <- me$predicted
-    me$varianceOriginalScale <- MMLFit$getResidualVariance()
-  }
+#  predicted <- MMLFit$getPredicted()
+#  range <- 0:(predicted$m_iRows-1)
+#  me$fitted <- predicted$getValueAt(range, as.integer(0))
+#  me$resid <- .convertJavaMatrixToR(MMLFit$getResiduals())
+  # if (isLogTransformed) {
+  #   predAndVariance <- .convertJavaMatrixToR(MMLFit$getPredOnLogBackTransformedScale(constant, TRUE))
+  #   me$predictedOriginalScale <- predAndVariance[,1]
+  #   me$varianceOriginalScale <- predAndVariance[,2]
+  # } else {
+  #   me$predictedOriginalScale <- me$predicted
+  #   me$varianceOriginalScale <- MMLFit$getResidualVariance()
+  # }
   return(me)
 }
 

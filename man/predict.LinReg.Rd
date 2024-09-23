@@ -4,15 +4,27 @@
 \alias{predict.LinReg}
 \title{Provide Predictions on the Original Scale.}
 \usage{
-\method{predict}{LinReg}(object, newdata, estimator)
+\method{predict}{LinReg}(
+  object,
+  newdata = NULL,
+  type = "response",
+  estimator = "Naive",
+  addResidualVariance = F
+)
 }
 \arguments{
 \item{object}{a LinReg S3 instance}
 
-\item{newdata}{a data.frame object with all the fields required by the model plus the y field set to NA}
+\item{newdata}{a data.frame object with all the independent variables required by the model.
+If null, then the original data are taken.}
 
-\item{estimator}{a character string among these ones: Baskerville, BeauchampAndOlson, MonteCarlo, or ComplexMonteCarlo}
+\item{type}{either response or original. Original means the predictions are back transformed.}
+
+\item{estimator}{a character string among these ones: Naive, BeauchampAndOlson, MonteCarlo, or ComplexMonteCarlo}
+
+\item{addResidualVariance}{a logical (TRUE: add the residual variance, is set to FALSE by default)}
 }
 \description{
-The method assumes that the responses are log transformed.
+If the response variable has not been log transformed, this function
+is equivalent to fitted.LinReg.
 }
