@@ -1,7 +1,7 @@
 Package: LinReg
 Type: Package
 Title: Fit Linear Models With Normally Distributed Errors
-Version: 1.1.0
+Version: 1.2.0
 Authors@R: c(
     person("Mathieu", "Fortin", email = "mathieu.fortin.re@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-6436-2727")),
     person("His Majesty the King in right of Canada", role=c("cph")))
@@ -11,8 +11,7 @@ Description: Fit linear models whose residual error distribution can be
     response variable is transformed. 
 Depends: R (>= 4.3.0)
 Imports: 
-    J4R (>= 1.2.1),
-    methods (>= 4.4.1)
+    J4R (>= 1.2.1)
 Remotes:
     CWFC-CCFB/J4R
 License: LGPL-3 + file LICENSE

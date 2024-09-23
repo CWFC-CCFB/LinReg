@@ -73,13 +73,13 @@ summary(fit)
 plot(fit)
 ~~~
 
-The fitted function has been modified to provide predictions on the original scale. For instance,
+The predict function has been modified to provide predictions on the original scale. For instance,
 
 ~~~R
-fitted(fit, type = "original")
+predict(fit, type = "original", addResidualVariance = T)
 ~~~
 
-provides a two-column matrix with the predictions and their estimated variances on the original scale. In this particular case, the constant one
+provides a two-column matrix with the predictions and the residual variances on the original scale. In this particular case, the constant one
 has been automatically subtracted from the predictions, since the transformation was ln(y+1). If this constant is different from one, the constant argument
 in the LinRegTrunc function should be set accordingly.
 
